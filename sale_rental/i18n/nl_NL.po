@@ -3,19 +3,19 @@
 # * sale_rental
 # 
 # Translators:
-# OCA Transbot <transbot@odoo-community.org>, 2017
+# Peter Hageman <hageman.p@gmail.com>, 2017
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 10.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-07-08 00:50+0000\n"
-"PO-Revision-Date: 2017-07-08 00:50+0000\n"
-"Last-Translator: OCA Transbot <transbot@odoo-community.org>, 2017\n"
-"Language-Team: Swedish (https://www.transifex.com/oca/teams/23907/sv/)\n"
+"POT-Creation-Date: 2017-06-06 13:17+0000\n"
+"PO-Revision-Date: 2017-06-06 13:17+0000\n"
+"Last-Translator: Peter Hageman <hageman.p@gmail.com>, 2017\n"
+"Language-Team: Dutch (Netherlands) (https://www.transifex.com/oca/teams/23907/nl_NL/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: sv\n"
+"Language: nl_NL\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: sale_rental
@@ -56,7 +56,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.ui.view,arch_db:sale_rental.create_rental_product_form
 msgid "Cancel"
-msgstr ""
+msgstr "Annuleren"
 
 #. module: sale_rental
 #: selection:sale.rental,state:0
@@ -72,7 +72,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_company_id
 msgid "Company"
-msgstr "Bolag"
+msgstr ""
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_copy_image
@@ -100,13 +100,13 @@ msgstr ""
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_create_uid
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_create_uid
 msgid "Created by"
-msgstr "Skapad av"
+msgstr "Aangemaakt door"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_create_date
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_create_date
 msgid "Created on"
-msgstr "Skapad den"
+msgstr "Aangemaakt op"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_partner_id
@@ -134,12 +134,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_display_name
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_display_name
 msgid "Display Name"
-msgstr "Visa namn"
+msgstr "Weergavenaam"
 
 #. module: sale_rental
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_tree
 msgid "End Date"
-msgstr ""
+msgstr "Einddatum"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_end_date
@@ -156,7 +156,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_search
 msgid "Group By"
-msgstr "Gruppera efter"
+msgstr ""
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_id
@@ -179,19 +179,19 @@ msgstr ""
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product___last_update
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental___last_update
 msgid "Last Modified on"
-msgstr "Senast redigerad"
+msgstr "Laatst gewijzigd op"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_write_uid
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_write_uid
 msgid "Last Updated by"
-msgstr "Senast uppdaterad av"
+msgstr "Laatst aangepast door"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_write_date
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_write_date
 msgid "Last Updated on"
-msgstr "Senast uppdaterad"
+msgstr "Laatst aangepast op"
 
 #. module: sale_rental
 #: code:addons/sale_rental/models/sale_order.py:68
@@ -209,7 +209,7 @@ msgstr ""
 #: code:addons/sale_rental/models/sale_order.py:179
 #, python-format
 msgid "Not enough stock !"
-msgstr ""
+msgstr "Onvoldoende voorraad !"
 
 #. module: sale_rental
 #: code:addons/sale_rental/models/sale_order.py:83
@@ -284,7 +284,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.model,name:sale_rental.model_product_product
 msgid "Product"
-msgstr ""
+msgstr "Product"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_categ_id
@@ -338,7 +338,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_stock_warehouse_rental_allowed
 msgid "Rental Allowed"
-msgstr ""
+msgstr "Verhuur toegestaan"
 
 #. module: sale_rental
 #: selection:sale.order.line,rental_type:0
@@ -368,7 +368,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_create_rental_product_sale_price_per_day
 msgid "Rental Price per Day"
-msgstr ""
+msgstr "Verhuurprijs per dag"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_sale_order_line_rental_qty
@@ -466,12 +466,12 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.model,name:sale_rental.model_sale_order
 msgid "Sales Order"
-msgstr ""
+msgstr "Verkooporder"
 
 #. module: sale_rental
 #: model:ir.model,name:sale_rental.model_sale_order_line
 msgid "Sales Order Line"
-msgstr ""
+msgstr "Verkooporderregel"
 
 #. module: sale_rental
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_search
@@ -517,13 +517,13 @@ msgstr ""
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_search
 #: selection:sale.rental,state:0
 msgid "Sold"
-msgstr ""
+msgstr "Verkocht"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_start_date
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_search
 msgid "Start Date"
-msgstr ""
+msgstr "Startdatum"
 
 #. module: sale_rental
 #: model:ir.model.fields,field_description:sale_rental.field_sale_rental_state
@@ -589,7 +589,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_form
 msgid "Total"
-msgstr ""
+msgstr "Totaal"
 
 #. module: sale_rental
 #: model:ir.ui.view,arch_db:sale_rental.sale_rental_form
@@ -599,7 +599,7 @@ msgstr ""
 #. module: sale_rental
 #: model:ir.model,name:sale_rental.model_stock_warehouse
 msgid "Warehouse"
-msgstr ""
+msgstr "Magazijn"
 
 #. module: sale_rental
 #: code:addons/sale_rental/models/sale_order.py:180
