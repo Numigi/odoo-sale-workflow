@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014-2016 Akretion (http://www.akretion.com)
 # @author Alexis de Lattre <alexis.delattre@akretion.com>
 # Copyright 2016 Sodexis (http://sodexis.com)
@@ -78,7 +77,7 @@ class StockWarehouse(models.Model):
             'route_id': rental_route.id,
             'picking_type_id': self.in_type_id.id,
             'warehouse_id': self.id,
-            }
+        }
         customer_loc = self.env.ref('stock.stock_location_customers')
         sell_rented_product_pull_rule = {
             'name': self.env['stock.warehouse']._format_rulename(
@@ -89,13 +88,14 @@ class StockWarehouse(models.Model):
             'action': 'move',
             'picking_type_id': self.out_type_id.id,
             'warehouse_id': self.id,
-            }
+        }
         res = {
             'procurement.rule': [
                 rental_pull_rule,
-                sell_rented_product_pull_rule],
+                sell_rented_product_pull_rule,
+            ],
             'stock.location.path': [rental_push_rule],
-            }
+        }
         return res
 
     @api.multi
@@ -113,7 +113,7 @@ class StockWarehouse(models.Model):
                             'name': _('Rental'),
                             'location_id': self.view_location_id.id,
                             'usage': 'view',
-                            })
+                        })
                         logger.debug(
                             'New view rental stock location created ID %d',
                             view_loc.id)
@@ -123,7 +123,7 @@ class StockWarehouse(models.Model):
                             'name': _('Rental In'),
                             'location_id':
                             warehouse.rental_view_location_id.id,
-                            })
+                        })
                         logger.debug(
                             'New in rental stock location created ID %d',
                             in_loc.id)
@@ -133,7 +133,7 @@ class StockWarehouse(models.Model):
                             'name': _('Rental Out'),
                             'location_id':
                             warehouse.rental_view_location_id.id,
-                            })
+                        })
                         logger.debug(
                             'New out rental stock location created ID %d',
                             out_loc.id)
@@ -142,9 +142,8 @@ class StockWarehouse(models.Model):
                         'route_ids': [(4, rental_route.id)],
                         'rental_route_id': rental_route.id,
                         'sell_rented_product_route_id': sell_rented_route.id,
-                        })
-                    for obj, rules_list in\
-                            self._get_rental_push_pull_rules().iteritems():
+                    })
+                    for obj, rules_list in self._get_rental_push_pull_rules().items():
                         for rule in rules_list:
                             self.env[obj].create(rule)
             else:
@@ -171,8 +170,8 @@ class StockWarehouse(models.Model):
                         'route_ids': [(3, rental_route.id)],
                         'rental_route_id': False,
                         'sell_rented_product_route_id': False,
-                        })
-        return super(StockWarehouse, self).write(vals)
+                    })
+        return super().write(vals)
 
 
 class StockLocationPath(models.Model):
@@ -180,14 +179,15 @@ class StockLocationPath(models.Model):
 
     @api.model
     def _prepare_push_apply(self, rule, move):
-        '''Inherit to write the end date of the rental on the return move'''
-        vals = super(StockLocationPath, self)._prepare_push_apply(rule, move)
+        """Inherit to write the end date of the rental on the return move."""
+        vals = super()._prepare_push_apply(rule, move)
         if (
-                move.procurement_id and
-                move.procurement_id.location_id ==
-                move.procurement_id.warehouse_id.rental_out_location_id and
-                move.procurement_id.sale_line_id and
-                move.procurement_id.sale_line_id.rental_type == 'new_rental'):
+            move.procurement_id and
+            move.procurement_id.location_id ==
+            move.procurement_id.warehouse_id.rental_out_location_id and
+            move.procurement_id.sale_line_id and
+            move.procurement_id.sale_line_id.rental_type == 'new_rental'
+        ):
             rental_end_date = move.procurement_id.sale_line_id.end_date
             vals['date'] = vals['date_expected'] = rental_end_date
         return vals
@@ -205,7 +205,7 @@ class StockInventory(models.Model):
             ('product.product_product_6', 56),
             ('product.product_product_8', 46),
             ('product.product_product_25', 2),
-            ]
+        ]
         for (product_xmlid, qty) in products:
             product = self.env.ref(product_xmlid)
             silo.create({

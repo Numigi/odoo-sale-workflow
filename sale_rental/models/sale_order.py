@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014-2016 Akretion (http://www.akretion.com)
 # @author Alexis de Lattre <alexis.delattre@akretion.com>
 # Copyright 2016 Sodexis (http://sodexis.com)
@@ -47,16 +46,13 @@ class SaleOrderLine(models.Model):
     rental_type = fields.Selection([
         ('new_rental', 'New Rental'),
         ('rental_extension', 'Rental Extension'),
-        ], 'Rental Type',
-        readonly=True, states={'draft': [('readonly', False)]})
-    extension_rental_id = fields.Many2one(
-        'sale.rental', string='Rental to Extend')
+    ], 'Rental Type', readonly=True, states={'draft': [('readonly', False)]})
+    extension_rental_id = fields.Many2one('sale.rental', string='Rental to Extend')
     rental_qty = fields.Float(
         string='Rental Quantity',
         digits=dp.get_precision('Product Unit of Measure'),
         help="Indicate the number of items that will be rented.")
-    sell_rental_id = fields.Many2one(
-        'sale.rental', string='Rental to Sell')
+    sell_rental_id = fields.Many2one('sale.rental', string='Rental to Sell')
 
     @api.one
     @api.constrains(
@@ -112,35 +108,90 @@ class SaleOrderLine(models.Model):
 
     @api.multi
     def _get_rental_date_planned(self):
-        self.ensure_one()
-        return self.start_date
+        start_date = fields.Date.from_string(self.start_date)
+        return fields.Datetime.to_string(start_date)
 
     @api.multi
-    def _prepare_order_line_procurement(self, group_id=False):
-        self.ensure_one()
-        res = super(SaleOrderLine, self)._prepare_order_line_procurement(
-            group_id=group_id)
-        if (
-                self.product_id.rented_product_id and
-                self.rental_type == 'new_rental'):
-            # 'product_qty' is re-written after
-            # _prepare_order_line_procurement() in _action_procurement_create()
-            # So I add a key 'rental_product_qty' which is used in the
-            # inherit of create() of procurement.order
-            res.update({
-                'product_id': self.product_id.rented_product_id.id,
-                'product_qty': self.rental_qty,
-                'rental_product_qty': self.rental_qty,
-                'product_uom': self.product_id.rented_product_id.uom_id.id,
-                'location_id':
-                self.order_id.warehouse_id.rental_out_location_id.id,
-                'route_ids':
-                [(6, 0, [self.order_id.warehouse_id.rental_route_id.id])],
-                'date_planned': self._get_rental_date_planned(),
-                })
-        elif self.sell_rental_id:
-            res['route_ids'] = [(6, 0, [
-                self.order_id.warehouse_id.sell_rented_product_route_id.id])]
+    def _action_launch_procurement_rule(self):
+        super()._action_launch_procurement_rule()
+
+        rental_lines = self.filtered(
+            lambda l: l.product_id.type == 'service' and l.product_id.rented_product_id)
+
+        for line in rental_lines:
+            line._launch_rental_procurement_rules()
+
+        return True
+
+    def _launch_rental_procurement_rules(self):
+        precision = self.env['decimal.precision'].precision_get('Product Unit of Measure')
+
+        rental_qty = self.rental_qty
+        rental_product = self.product_id.rented_product_id
+        rental_uom = rental_product.uom_id
+
+        #################################################
+        # Code taken from sale_stock/models/sale_order.py
+        # method _action_launch_procurement_rule
+        #################################################
+        qty = 0.0
+        for move in self.move_ids.filtered(lambda r: r.state != 'cancel'):
+            qty += move.product_uom._compute_quantity(
+                move.product_uom_qty, rental_uom, rounding_method='HALF-UP')
+
+        if float_compare(qty, rental_qty, precision_digits=precision) >= 0:
+            return
+
+        group_id = self.order_id.procurement_group_id
+        if not group_id:
+            group_id = self.env['procurement.group'].create({
+                'name': self.order_id.name,
+                'move_type': self.order_id.picking_policy,
+                'sale_id': self.order_id.id,
+                'partner_id': self.order_id.partner_shipping_id.id,
+            })
+            self.order_id.procurement_group_id = group_id
+        else:
+            updated_vals = {}
+
+            if group_id.partner_id != self.order_id.partner_shipping_id:
+                updated_vals.update({'partner_id': self.order_id.partner_shipping_id.id})
+
+            if group_id.move_type != self.order_id.picking_policy:
+                updated_vals.update({'move_type': self.order_id.picking_policy})
+
+            if updated_vals:
+                group_id.write(updated_vals)
+
+        #################################################
+
+        values = self._prepare_rental_procurement_values(group_id=group_id)
+
+        quantity_to_procure = rental_qty - qty
+
+        self.env['procurement.group'].run(
+            rental_product, quantity_to_procure, rental_uom,
+            self.order_id.partner_shipping_id.property_stock_customer,
+            self.name, self.order_id.name, values)
+
+    @api.multi
+    def _prepare_rental_procurement_values(self, group_id=False):
+        res = self._prepare_procurement_values(group_id=group_id)
+
+        del res['sale_line_id']
+
+        res.update({
+            'product_id': self.product_id.rented_product_id,
+            'product_qty': self.rental_qty,
+            'product_uom': self.product_id.rented_product_id.uom_id,
+            'location_id': self.order_id.warehouse_id.rental_out_location_id,
+            'route_ids': self.order_id.warehouse_id.rental_route_id,
+            'date_planned': self._get_rental_date_planned(),
+        })
+
+        if self.sell_rental_id:
+            res['route_ids'] = self.order_id.warehouse_id.sell_rented_product_route_id
+
         return res
 
     @api.onchange('product_id')
@@ -154,16 +205,19 @@ class SaleOrderLine(models.Model):
                 if not self.rental_type:
                     self.rental_type = 'new_rental'
                 elif (
-                        self.rental_type == 'new_rental' and
-                        self.rental_qty and self.order_id.warehouse_id):
+                    self.rental_type == 'new_rental' and
+                    self.rental_qty and
+                    self.order_id.warehouse_id
+                ):
                     product_uom = self.product_id.rented_product_id.uom_id
                     warehouse = self.order_id.warehouse_id
                     rental_in_location = warehouse.rental_in_location_id
                     rented_product_ctx = self.with_context(
-                        location=rental_in_location.id).product_id.\
-                        rented_product_id
-                    in_location_available_qty = rented_product_ctx.\
-                        qty_available - rented_product_ctx.outgoing_qty
+                        location=rental_in_location.id).product_id.rented_product_id
+                    in_location_available_qty = (
+                        rented_product_ctx.qty_available -
+                        rented_product_ctx.outgoing_qty
+                    )
                     compare_qty = float_compare(
                         in_location_available_qty, self.rental_qty,
                         precision_rounding=product_uom.rounding)
@@ -181,8 +235,9 @@ class SaleOrderLine(models.Model):
                                 in_location_available_qty,
                                 product_uom.name,
                                 rental_in_location.name,
-                                rental_in_location.name)
-                            }
+                                rental_in_location.name
+                            )
+                        }
             elif self.product_id.rental_service_ids:
                 self.can_sell_rental = True
                 self.rental = False

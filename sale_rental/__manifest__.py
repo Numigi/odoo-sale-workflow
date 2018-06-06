@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014-2016 Akretion (http://www.akretion.com)
 # @author Alexis de Lattre <alexis.delattre@akretion.com>
 # Copyright 2016 Sodexis (http://sodexis.com)
@@ -23,7 +22,6 @@
         'security/ir.model.access.csv',
         'security/sale_rental_security.xml',
     ],
-    'post_init_hook': 'add_users_to_group_mrp_properties',
     'demo': ['demo/rental_demo.xml'],
     'installable': True,
 }

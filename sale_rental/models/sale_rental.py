@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2014-2016 Akretion (http://www.akretion.com)
 # @author Alexis de Lattre <alexis.delattre@akretion.com>
 # Copyright 2016 Sodexis (http://sodexis.com)
@@ -32,54 +31,48 @@ class SaleRental(models.Model):
     @api.one
     @api.depends(
         'start_order_line_id.order_id.state',
-        'start_order_line_id.procurement_ids.move_ids.state',
-        'start_order_line_id.procurement_ids.move_ids.move_dest_id.state',
-        'sell_order_line_ids.procurement_ids.move_ids.state',
-        )
+        'start_order_line_id.move_ids.state',
+        'start_order_line_id.move_ids.move_dest_ids.state',
+        'sell_order_line_ids.move_ids.state',
+    )
     def _compute_procurement_and_move(self):
-        procurement = False
         in_move = False
         out_move = False
-        sell_procurement = False
         sell_move = False
         state = False
-        if (
-                self.start_order_line_id and
-                self.start_order_line_id.procurement_ids):
 
-            procurement = self.start_order_line_id.procurement_ids[0]
-            if procurement.move_ids:
-                for move in procurement.move_ids:
-                    if move.move_dest_id:
-                        out_move = move
-                        in_move = move.move_dest_id
-            if (
-                    self.sell_order_line_ids and
-                    self.sell_order_line_ids[0].procurement_ids):
-                sell_procurement =\
-                    self.sell_order_line_ids[0].procurement_ids[0]
-                if sell_procurement.move_ids:
-                    sell_move = sell_procurement.move_ids[0]
+        if self.start_order_line_id:
+
+            out_moves_having_in_moves = self.start_order_line_id.move_ids.filtered(
+                lambda m: m.move_dest_ids)
+
+            for move in out_moves_having_in_moves:
+                out_move = move
+                in_move = move.move_dest_ids[0]
+
             state = 'ordered'
+
             if out_move and in_move:
                 if out_move.state == 'done':
                     state = 'out'
+
                 if out_move.state == 'done' and in_move.state == 'done':
                     state = 'in'
-                if (
-                        out_move.state == 'done' and
-                        in_move.state == 'cancel' and
-                        sell_procurement):
+
+                if out_move.state == 'done' and in_move.state == 'cancel':
                     state = 'sell_progress'
-                    if sell_move and sell_move.state == 'done':
-                        state = 'sold'
+
+            sell_moves = self.sell_order_line_ids.mapped('move_ids')
+
+            if sell_moves and 'done' in sell_moves.mapped('state'):
+                state = 'sold'
+
             if self.start_order_line_id.order_id.state == 'cancel':
                 state = 'cancel'
-        self.procurement_id = procurement
+
         self.in_move_id = in_move
         self.out_move_id = out_move
         self.state = state
-        self.sell_procurement_id = sell_procurement
         self.sell_move_id = sell_move
 
     @api.one
@@ -88,13 +81,17 @@ class SaleRental(models.Model):
         'start_order_line_id.end_date')
     def _compute_end_date(self):
         end_date = False
-        if self.extension_order_line_ids:
-            for extension in self.extension_order_line_ids:
-                if extension.state not in ('cancel', 'draft'):
-                    if extension.end_date > end_date:
-                        end_date = extension.end_date
+
+        confirmed_extension_lines = self.extension_order_line_ids.filtered(
+            lambda l: l.state not in ('cancel', 'draft'))
+
+        for extension in confirmed_extension_lines:
+            if extension.end_date > end_date:
+                end_date = extension.end_date
+
         if not end_date and self.start_order_line_id:
             end_date = self.start_order_line_id.end_date
+
         self.end_date = end_date
 
     display_name = fields.Char(
@@ -122,9 +119,6 @@ class SaleRental(models.Model):
     partner_id = fields.Many2one(
         'res.partner', related='start_order_line_id.order_id.partner_id',
         string='Customer', readonly=True, store=True)
-    procurement_id = fields.Many2one(
-        'procurement.order', string="Procurement", readonly=True,
-        compute='_compute_procurement_and_move', store=True)
     out_move_id = fields.Many2one(
         'stock.move', compute='_compute_procurement_and_move',
         string='Outgoing Stock Move', readonly=True, store=True)
@@ -149,9 +143,6 @@ class SaleRental(models.Model):
     sell_order_line_ids = fields.One2many(
         'sale.order.line', 'sell_rental_id',
         string='Sell Rented Product', readonly=True)
-    sell_procurement_id = fields.Many2one(
-        'procurement.order', string="Sell Procurement", readonly=True,
-        compute='_compute_procurement_and_move', store=True)
     sell_move_id = fields.Many2one(
         'stock.move', compute='_compute_procurement_and_move',
         string='Sell Stock Move', readonly=True, store=True)
@@ -173,5 +164,4 @@ class SaleRental(models.Model):
         ('sold', 'Sold'),
         ('in', 'Back In'),
         ('cancel', 'Cancelled'),
-        ], string='State', compute='_compute_procurement_and_move',
-        readonly=True, store=True)
+    ], string='State', compute='_compute_procurement_and_move', readonly=True, store=True)
